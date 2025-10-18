@@ -44,7 +44,7 @@ exe = EXE(
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
-    console=False,  # change to True for CLI version
+    console=True,  # change to True for CLI version
 )
 
 coll = COLLECT(
