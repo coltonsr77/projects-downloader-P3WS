@@ -88,7 +88,6 @@ def check_for_updates():
                 latest = version.parse(latest_tag)
 
                 if latest < current:
-                    # Latest release is lower than user's version → show update available
                     if messagebox.askyesno(
                         "Update Available",
                         f"A new version ({latest_tag}) is available!\n\n"
@@ -96,13 +95,12 @@ def check_for_updates():
                     ):
                         webbrowser.open(APP_GITHUB + "/releases/latest")
                 else:
-                    # Latest release is equal or higher → user has "latest" version
                     messagebox.showinfo(
                         "Up to Date",
                         f"You already have the latest version ({APP_VERSION})."
                     )
     except requests.exceptions.RequestException:
-        pass  # Skip silently if offline or error
+        pass
 
 
 def start_download_thread():
@@ -146,18 +144,18 @@ def show_about():
 
 
 def update_mode_visibility(*_):
-    """Show all fields in File mode."""
+    """Arrange input fields; Raw URL under Branch in File mode."""
     if mode_var.get() == "Repository":
         owner_entry.pack(pady=5)
         repo_entry.pack(pady=5)
         branch_entry.pack(pady=5)
         file_entry.pack_forget()
     else:
-        # Show all boxes in File mode
+        # File mode: show all four boxes
         owner_entry.pack(pady=5)
         repo_entry.pack(pady=5)
         branch_entry.pack(pady=5)
-        file_entry.pack(pady=5)
+        file_entry.pack(pady=5)  # Raw URL now appears under Branch
 
 
 # === MAIN UI ===
@@ -165,7 +163,6 @@ app = ctk.CTk()
 app.title(f"{APP_NAME} v{APP_VERSION}")
 app.geometry("520x550")
 
-# Auto check updates
 app.after(1200, check_for_updates)
 
 # Title
@@ -179,7 +176,7 @@ ctk.CTkOptionMenu(app, variable=mode_var, values=["Repository", "File"], command
 owner_entry = ctk.CTkEntry(app, placeholder_text="Owner (e.g. torvalds)")
 repo_entry = ctk.CTkEntry(app, placeholder_text="Repository (e.g. linux)")
 branch_entry = ctk.CTkEntry(app, placeholder_text="Branch (default: main)")
-file_entry = ctk.CTkEntry(app, placeholder_text="Raw file URL")
+file_entry = ctk.CTkEntry(app, placeholder_text="Raw file URL")  # Under Branch
 
 update_mode_visibility()
 
