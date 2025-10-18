@@ -49,7 +49,6 @@ exe = EXE(
     strip=False,
     upx=True,
     console=True,  # GUI app (set to True for CLI version)
-    icon=ICON_PATH,
     version=os.path.join(os.getcwd(), "version.txt") if os.path.exists("version.txt") else None,
 )
 
