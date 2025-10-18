@@ -5,6 +5,7 @@ import requests
 import threading
 from github_downloader import ensure_downloads_dir
 import os
+from packaging import version  # For version comparison
 
 # === APP INFO ===
 APP_NAME = "Projects Downloader"
@@ -16,7 +17,6 @@ APP_RELEASES_API = "https://api.github.com/repos/coltonsr77/projects-downloader-
 
 # === Download Helpers ===
 def download_repo(owner, repo, branch, progress_callback):
-    """Download a repository ZIP and update progress."""
     url = f"https://github.com/{owner}/{repo}/archive/refs/heads/{branch}.zip"
     download_dir = ensure_downloads_dir()
     output_path = os.path.join(download_dir, f"{repo}-{branch}.zip")
@@ -40,8 +40,15 @@ def download_repo(owner, repo, branch, progress_callback):
     messagebox.showinfo("Download Complete", f"Repository saved to:\n{output_path}")
 
 
-def download_file(file_url, progress_callback):
+def download_file(file_url, owner, repo, branch, progress_callback):
     """Download a single file and update progress."""
+    if not file_url:
+        if not owner or not repo:
+            messagebox.showerror("Error", "Owner and Repository required if no Raw URL provided.")
+            return
+        messagebox.showinfo("Info", "No raw URL provided. File download skipped.")
+        return
+
     if "raw.githubusercontent.com" not in file_url:
         messagebox.showerror("Error", "Use a valid 'Raw' GitHub file URL.")
         return
@@ -71,50 +78,58 @@ def download_file(file_url, progress_callback):
 
 # === GUI Logic ===
 def check_for_updates():
-    """Check GitHub releases for updates."""
+    """Check GitHub releases with reversed logic."""
     try:
         response = requests.get(APP_RELEASES_API, timeout=5)
         if response.status_code == 200:
-            latest = response.json().get("tag_name", "").replace("v", "")
-            if latest and latest != APP_VERSION:
-                if messagebox.askyesno(
-                    "Update Available",
-                    f"A new version ({latest}) is available!\n\n"
-                    f"Would you like to open the download page?"
-                ):
-                    webbrowser.open(APP_GITHUB + "/releases/latest")
+            latest_tag = response.json().get("tag_name", "").replace("v", "")
+            if latest_tag:
+                current = version.parse(APP_VERSION)
+                latest = version.parse(latest_tag)
+
+                if latest < current:
+                    # Latest release is lower than user's version → show update available
+                    if messagebox.askyesno(
+                        "Update Available",
+                        f"A new version ({latest_tag}) is available!\n\n"
+                        f"Would you like to open the download page?"
+                    ):
+                        webbrowser.open(APP_GITHUB + "/releases/latest")
+                else:
+                    # Latest release is equal or higher → user has "latest" version
+                    messagebox.showinfo(
+                        "Up to Date",
+                        f"You already have the latest version ({APP_VERSION})."
+                    )
     except requests.exceptions.RequestException:
-        pass
+        pass  # Skip silently if offline or error
 
 
 def start_download_thread():
-    """Start download in a background thread."""
     progress_bar.set(0)
     progress_label.configure(text="Preparing download...")
 
     def run_download():
         mode = mode_var.get()
+        owner = owner_entry.get().strip()
+        repo = repo_entry.get().strip()
+        branch = branch_entry.get().strip() or "main"
+        file_url = file_entry.get().strip()
+
         if mode == "Repository":
-            owner = owner_entry.get().strip()
-            repo = repo_entry.get().strip()
-            branch = branch_entry.get().strip() or "main"
             if not owner or not repo:
                 messagebox.showerror("Error", "Please enter both Owner and Repository name.")
                 return
             download_repo(owner, repo, branch, update_progress)
         else:
-            file_url = file_entry.get().strip()
-            if not file_url:
-                messagebox.showerror("Error", "Please enter a valid Raw file URL.")
-                return
-            download_file(file_url, update_progress)
+            download_file(file_url, owner, repo, branch, update_progress)
+
         progress_label.configure(text="Download complete!")
 
     threading.Thread(target=run_download, daemon=True).start()
 
 
 def update_progress(percent):
-    """Update the progress bar and label."""
     progress_bar.set(percent / 100)
     progress_label.configure(text=f"Progress: {percent:.1f}%")
 
@@ -131,25 +146,26 @@ def show_about():
 
 
 def update_mode_visibility(*_):
-    """Hide or show input fields depending on mode."""
+    """Show all fields in File mode."""
     if mode_var.get() == "Repository":
         owner_entry.pack(pady=5)
         repo_entry.pack(pady=5)
         branch_entry.pack(pady=5)
         file_entry.pack_forget()
     else:
+        # Show all boxes in File mode
+        owner_entry.pack(pady=5)
+        repo_entry.pack(pady=5)
+        branch_entry.pack(pady=5)
         file_entry.pack(pady=5)
-        owner_entry.pack_forget()
-        repo_entry.pack_forget()
-        branch_entry.pack_forget()
 
 
 # === MAIN UI ===
 app = ctk.CTk()
 app.title(f"{APP_NAME} v{APP_VERSION}")
-app.geometry("520x500")
+app.geometry("520x550")
 
-# Auto check updates silently
+# Auto check updates
 app.after(1200, check_for_updates)
 
 # Title
@@ -182,4 +198,3 @@ ctk.CTkButton(app, text="About", command=show_about).pack(pady=5)
 ctk.CTkLabel(app, text=f"Version {APP_VERSION} | {APP_AUTHOR}", font=("Arial", 10)).pack(pady=10)
 
 app.mainloop()
-
