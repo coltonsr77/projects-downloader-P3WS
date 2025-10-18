@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from github_downloader import download_repo, download_file
+from github-downloader import download_repo, download_file
 
 def start_download():
     mode = mode_var.get()
