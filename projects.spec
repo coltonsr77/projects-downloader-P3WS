@@ -8,7 +8,7 @@ import os
 
 # --- SETTINGS ---
 APP_NAME = "ProjectsDownloader"
-APP_VERSION = "0.2"
+APP_VERSION = "0.3"
 APP_AUTHOR = "coltonsr77"
 APP_DESCRIPTION = "A desktop tool to download GitHub repositories or individual files easily."
 MAIN_FILE = "app_gui.py"     # GUI entry point
