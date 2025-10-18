@@ -1,25 +1,29 @@
-# github_downloader.spec
-# PyInstaller spec file for building the GitHub Downloader app
+# projects_downloader.spec
+# PyInstaller build script for Projects Downloader (v0.1)
+# Author: coltonsr77
+# GitHub: https://github.com/coltonsr77/projects-downloader-P3WS
 
 from PyInstaller.utils.hooks import collect_submodules
 import os
 
-# ---- SETTINGS ----
-# Choose the main file to build
-MAIN_FILE = "app_gui.py"   # or "github_downloader.py" for CLI
+# --- SETTINGS ---
+APP_NAME = "ProjectsDownloader"
+APP_VERSION = "0.1"
+APP_AUTHOR = "coltonsr77"
+APP_DESCRIPTION = "A desktop tool to download GitHub repositories or individual files easily."
+MAIN_FILE = "app_gui.py"     # GUI entry point
 
-# Collect all hidden imports for customtkinter
+# Hidden imports for customtkinter
 hiddenimports = collect_submodules('customtkinter')
 
-# Path to icon (optional)
-ICON_PATH = os.path.join(os.getcwd(), "icon.ico")
-
+# --- ANALYSIS ---
 a = Analysis(
     [MAIN_FILE],
     pathex=[],
     binaries=[],
     datas=[
         ("requirements.txt", "."),  # include requirements file
+        ("github_downloader.py", "."),  # include the downloader logic
     ],
     hiddenimports=hiddenimports,
     hookspath=[],
@@ -39,12 +43,14 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name="GitHubDownloader",
+    name=APP_NAME,
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
-    console=True,  # change to True for CLI version
+    console=True,  # GUI app (set to True for CLI version)
+    icon=ICON_PATH,
+    version=os.path.join(os.getcwd(), "version.txt") if os.path.exists("version.txt") else None,
 )
 
 coll = COLLECT(
@@ -55,5 +61,5 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name="GitHubDownloader",
+    name=APP_NAME,
 )
