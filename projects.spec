@@ -48,7 +48,7 @@ exe = EXE(
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
-    console=True,  # GUI app (set to True for CLI version)
+    console=False,  # GUI app (set to True for CLI version)
     version=os.path.join(os.getcwd(), "version.txt") if os.path.exists("version.txt") else None,
 )
 
