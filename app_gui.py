@@ -3,7 +3,7 @@ from tkinter import messagebox
 from github_downloader import download_repo, download_file
 
 APP_NAME = "Projects Downloader"
-APP_VERSION = "0.1"
+APP_VERSION = "0.2"
 APP_AUTHOR = "coltonsr77"
 APP_GITHUB = "https://github.com/coltonsr77/projects-downloader-P3WS"
 
