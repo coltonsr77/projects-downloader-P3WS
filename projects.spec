@@ -45,7 +45,6 @@ exe = EXE(
     strip=False,
     upx=True,
     console=False,  # change to True for CLI version
-    icon=ICON_PATH,
 )
 
 coll = COLLECT(
