@@ -1,11 +1,29 @@
 import customtkinter as ctk
 from tkinter import messagebox
 from github_downloader import download_repo, download_file
+import requests
 
 APP_NAME = "Projects Downloader"
 APP_VERSION = "0.2"
 APP_AUTHOR = "coltonsr77"
 APP_GITHUB = "https://github.com/coltonsr77/projects-downloader-P3WS"
+APP_RELEASES_API = "https://api.github.com/repos/coltonsr77/projects-downloader-P3WS/releases/latest"
+
+def check_for_updates():
+    """Check the latest release on GitHub and compare with current version."""
+    try:
+        response = requests.get(APP_RELEASES_API, timeout=5)
+        if response.status_code == 200:
+            latest = response.json().get("tag_name", "").replace("v", "")
+            if latest and latest != APP_VERSION:
+                messagebox.showinfo(
+                    "Update Available",
+                    f"A new version ({latest}) is available!\n\n"
+                    f"Visit the GitHub page to download it:\n{APP_GITHUB}"
+                )
+    except requests.exceptions.RequestException:
+        # Ignore connection errors — just skip silently
+        pass
 
 def start_download():
     mode = mode_var.get()
@@ -27,20 +45,22 @@ def show_about():
         f"{APP_NAME} v{APP_VERSION}\n\n"
         f"Created by {APP_AUTHOR}\n"
         f"GitHub: {APP_GITHUB}\n\n"
-        "This tool allows users to easily download GitHub projects or single files.\n"
-        "Compatible with all public repositories."
+        "A tool to easily download GitHub repositories or single files.\n"
+        "Compatible with all public projects."
     )
     messagebox.showinfo("About", about_text)
 
-# Initialize the app window
+# --- GUI SETUP ---
 app = ctk.CTk()
 app.title(f"{APP_NAME} v{APP_VERSION}")
 app.geometry("500x420")
 
-# Title
+# Check for updates on startup
+app.after(1000, check_for_updates)
+
 ctk.CTkLabel(app, text=APP_NAME, font=("Arial", 24, "bold")).pack(pady=10)
 
-# Mode selection
+# Mode selector
 mode_var = ctk.StringVar(value="Repository")
 ctk.CTkOptionMenu(app, variable=mode_var, values=["Repository", "File"]).pack(pady=5)
 
