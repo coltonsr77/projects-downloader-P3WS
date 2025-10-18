@@ -2,7 +2,9 @@ import customtkinter as ctk
 from tkinter import messagebox
 import webbrowser
 import requests
-from github_downloader import download_repo, download_file
+import threading
+from github_downloader import ensure_downloads_dir
+import os
 
 # === APP INFO ===
 APP_NAME = "Projects Downloader"
@@ -12,9 +14,64 @@ APP_GITHUB = "https://github.com/coltonsr77/projects-downloader-P3WS"
 APP_RELEASES_API = "https://api.github.com/repos/coltonsr77/projects-downloader-P3WS/releases/latest"
 
 
-# === FUNCTIONS ===
+# === Download Helpers ===
+def download_repo(owner, repo, branch, progress_callback):
+    """Download a repository ZIP and update progress."""
+    url = f"https://github.com/{owner}/{repo}/archive/refs/heads/{branch}.zip"
+    download_dir = ensure_downloads_dir()
+    output_path = os.path.join(download_dir, f"{repo}-{branch}.zip")
+
+    response = requests.get(url, stream=True)
+    if response.status_code != 200:
+        messagebox.showerror("Error", f"Failed to download repo: {response.status_code}")
+        return
+
+    total = int(response.headers.get('content-length', 0))
+    downloaded = 0
+
+    with open(output_path, "wb") as f:
+        for chunk in response.iter_content(chunk_size=8192):
+            if chunk:
+                f.write(chunk)
+                downloaded += len(chunk)
+                percent = (downloaded / total) * 100 if total else 0
+                progress_callback(percent)
+
+    messagebox.showinfo("Download Complete", f"Repository saved to:\n{output_path}")
+
+
+def download_file(file_url, progress_callback):
+    """Download a single file and update progress."""
+    if "raw.githubusercontent.com" not in file_url:
+        messagebox.showerror("Error", "Use a valid 'Raw' GitHub file URL.")
+        return
+
+    download_dir = ensure_downloads_dir()
+    filename = file_url.split("/")[-1]
+    output_path = os.path.join(download_dir, filename)
+
+    response = requests.get(file_url, stream=True)
+    if response.status_code != 200:
+        messagebox.showerror("Error", f"Failed to download file: {response.status_code}")
+        return
+
+    total = int(response.headers.get('content-length', 0))
+    downloaded = 0
+
+    with open(output_path, "wb") as f:
+        for chunk in response.iter_content(chunk_size=8192):
+            if chunk:
+                f.write(chunk)
+                downloaded += len(chunk)
+                percent = (downloaded / total) * 100 if total else 0
+                progress_callback(percent)
+
+    messagebox.showinfo("Download Complete", f"File saved to:\n{output_path}")
+
+
+# === GUI Logic ===
 def check_for_updates():
-    """Check GitHub for new releases."""
+    """Check GitHub releases for updates."""
     try:
         response = requests.get(APP_RELEASES_API, timeout=5)
         if response.status_code == 200:
@@ -27,31 +84,39 @@ def check_for_updates():
                 ):
                     webbrowser.open(APP_GITHUB + "/releases/latest")
     except requests.exceptions.RequestException:
-        pass  # Skip silently if offline
+        pass
 
 
-def start_download():
-    """Start repo or file download based on selected mode."""
-    mode = mode_var.get()
-    if mode == "Repository":
-        owner = owner_entry.get().strip()
-        repo = repo_entry.get().strip()
-        branch = branch_entry.get().strip() or "main"
+def start_download_thread():
+    """Start download in a background thread."""
+    progress_bar.set(0)
+    progress_label.configure(text="Preparing download...")
 
-        if not owner or not repo:
-            messagebox.showerror("Error", "Please enter both Owner and Repository name.")
-            return
+    def run_download():
+        mode = mode_var.get()
+        if mode == "Repository":
+            owner = owner_entry.get().strip()
+            repo = repo_entry.get().strip()
+            branch = branch_entry.get().strip() or "main"
+            if not owner or not repo:
+                messagebox.showerror("Error", "Please enter both Owner and Repository name.")
+                return
+            download_repo(owner, repo, branch, update_progress)
+        else:
+            file_url = file_entry.get().strip()
+            if not file_url:
+                messagebox.showerror("Error", "Please enter a valid Raw file URL.")
+                return
+            download_file(file_url, update_progress)
+        progress_label.configure(text="Download complete!")
 
-        download_repo(owner, repo, branch)
-        messagebox.showinfo("Download Started", f"Repository '{repo}' download started.")
-    else:
-        file_url = file_entry.get().strip()
-        if not file_url:
-            messagebox.showerror("Error", "Please enter a valid Raw file URL.")
-            return
+    threading.Thread(target=run_download, daemon=True).start()
 
-        download_file(file_url)
-        messagebox.showinfo("Download Started", "File download started.")
+
+def update_progress(percent):
+    """Update the progress bar and label."""
+    progress_bar.set(percent / 100)
+    progress_label.configure(text=f"Progress: {percent:.1f}%")
 
 
 def show_about():
@@ -60,18 +125,17 @@ def show_about():
         f"Created by {APP_AUTHOR}\n"
         f"GitHub: {APP_GITHUB}\n\n"
         "A desktop tool for downloading GitHub repositories or single files.\n"
-        "Compatible with all public projects."
+        "All downloads are saved in the 'downloads' folder."
     )
     messagebox.showinfo("About", about_text)
 
 
 def open_update_page():
-    """Open the GitHub releases page."""
     webbrowser.open(APP_GITHUB + "/releases/latest")
 
 
 def update_mode_visibility(*_):
-    """Hide or show input fields based on selected mode."""
+    """Hide or show input fields depending on mode."""
     if mode_var.get() == "Repository":
         owner_entry.pack(pady=5)
         repo_entry.pack(pady=5)
@@ -84,21 +148,20 @@ def update_mode_visibility(*_):
         branch_entry.pack_forget()
 
 
-# === UI SETUP ===
+# === MAIN UI ===
 app = ctk.CTk()
 app.title(f"{APP_NAME} v{APP_VERSION}")
-app.geometry("500x450")
+app.geometry("520x520")
 
-# Auto-check for updates after startup
+# Auto check updates
 app.after(1200, check_for_updates)
 
-# Header
+# Title
 ctk.CTkLabel(app, text=APP_NAME, font=("Arial", 24, "bold")).pack(pady=10)
 
 # Mode selection
 mode_var = ctk.StringVar(value="Repository")
-mode_menu = ctk.CTkOptionMenu(app, variable=mode_var, values=["Repository", "File"], command=update_mode_visibility)
-mode_menu.pack(pady=5)
+ctk.CTkOptionMenu(app, variable=mode_var, values=["Repository", "File"], command=update_mode_visibility).pack(pady=5)
 
 # Input fields
 owner_entry = ctk.CTkEntry(app, placeholder_text="Owner (e.g. torvalds)")
@@ -106,11 +169,17 @@ repo_entry = ctk.CTkEntry(app, placeholder_text="Repository (e.g. linux)")
 branch_entry = ctk.CTkEntry(app, placeholder_text="Branch (default: main)")
 file_entry = ctk.CTkEntry(app, placeholder_text="Raw file URL")
 
-# Default mode setup (Repo mode)
 update_mode_visibility()
 
+# Progress Bar
+progress_bar = ctk.CTkProgressBar(app, width=400)
+progress_bar.set(0)
+progress_bar.pack(pady=10)
+progress_label = ctk.CTkLabel(app, text="Progress: 0%")
+progress_label.pack(pady=2)
+
 # Buttons
-ctk.CTkButton(app, text="Download", command=start_download).pack(pady=20)
+ctk.CTkButton(app, text="Download", command=start_download_thread).pack(pady=15)
 ctk.CTkButton(app, text="About", command=show_about).pack(pady=5)
 ctk.CTkButton(app, text="Update Now", command=open_update_page).pack(pady=5)
 
@@ -118,4 +187,3 @@ ctk.CTkButton(app, text="Update Now", command=open_update_page).pack(pady=5)
 ctk.CTkLabel(app, text=f"Version {APP_VERSION} | {APP_AUTHOR}", font=("Arial", 10)).pack(pady=10)
 
 app.mainloop()
-
