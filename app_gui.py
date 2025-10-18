@@ -130,10 +130,6 @@ def show_about():
     messagebox.showinfo("About", about_text)
 
 
-def open_update_page():
-    webbrowser.open(APP_GITHUB + "/releases/latest")
-
-
 def update_mode_visibility(*_):
     """Hide or show input fields depending on mode."""
     if mode_var.get() == "Repository":
@@ -151,9 +147,9 @@ def update_mode_visibility(*_):
 # === MAIN UI ===
 app = ctk.CTk()
 app.title(f"{APP_NAME} v{APP_VERSION}")
-app.geometry("520x520")
+app.geometry("520x500")
 
-# Auto check updates
+# Auto check updates silently
 app.after(1200, check_for_updates)
 
 # Title
@@ -181,9 +177,9 @@ progress_label.pack(pady=2)
 # Buttons
 ctk.CTkButton(app, text="Download", command=start_download_thread).pack(pady=15)
 ctk.CTkButton(app, text="About", command=show_about).pack(pady=5)
-ctk.CTkButton(app, text="Update Now", command=open_update_page).pack(pady=5)
 
 # Footer
 ctk.CTkLabel(app, text=f"Version {APP_VERSION} | {APP_AUTHOR}", font=("Arial", 10)).pack(pady=10)
 
 app.mainloop()
+
