@@ -1,5 +1,5 @@
 # projects_downloader.spec
-# PyInstaller build script for Projects Downloader (v0.2)
+# PyInstaller build script for Projects Downloader (v0.3)
 # Author: coltonsr77
 # GitHub: https://github.com/coltonsr77/projects-downloader-P3WS
 
