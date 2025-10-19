@@ -9,7 +9,7 @@ from packaging import version  # For version comparison
 
 # === APP INFO ===
 APP_NAME = "Projects Downloader"
-APP_VERSION = "0.3"
+APP_VERSION = "0.4"
 APP_AUTHOR = "coltonsr77"
 APP_GITHUB = "https://github.com/coltonsr77/projects-downloader-P3WS"
 APP_RELEASES_API = "https://api.github.com/repos/coltonsr77/projects-downloader-P3WS/releases/latest"
