@@ -144,18 +144,17 @@ def show_about():
 
 
 def update_mode_visibility(*_):
-    """Arrange input fields; Raw URL under Branch in File mode."""
+    """Arrange input fields; Raw URL under Branch with spacing in File mode."""
     if mode_var.get() == "Repository":
         owner_entry.pack(pady=5)
         repo_entry.pack(pady=5)
         branch_entry.pack(pady=5)
         file_entry.pack_forget()
     else:
-        # File mode: show all four boxes
         owner_entry.pack(pady=5)
         repo_entry.pack(pady=5)
         branch_entry.pack(pady=5)
-        file_entry.pack(pady=5)  # Raw URL now appears under Branch
+        file_entry.pack(pady=10)  # Extra spacing for visual separation
 
 
 # === MAIN UI ===
@@ -176,7 +175,7 @@ ctk.CTkOptionMenu(app, variable=mode_var, values=["Repository", "File"], command
 owner_entry = ctk.CTkEntry(app, placeholder_text="Owner (e.g. torvalds)")
 repo_entry = ctk.CTkEntry(app, placeholder_text="Repository (e.g. linux)")
 branch_entry = ctk.CTkEntry(app, placeholder_text="Branch (default: main)")
-file_entry = ctk.CTkEntry(app, placeholder_text="Raw file URL")  # Under Branch
+file_entry = ctk.CTkEntry(app, placeholder_text="Raw file URL")  # Now spaced below Branch
 
 update_mode_visibility()
 
