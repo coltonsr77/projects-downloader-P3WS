@@ -1,3 +1,3 @@
 # projects-downloader-P3WS
 
-A app that downloads files or repos for you
+A python 3 app that downloads repos or files for you
