@@ -1,5 +1,5 @@
 # projects_downloader.spec
-# PyInstaller build script for Projects Downloader (v0.5)
+# PyInstaller build script for Projects Downloader (v0.4.1)
 # Author: coltonsr77
 # GitHub: https://github.com/coltonsr77/projects-downloader-P3WS
 
@@ -8,7 +8,7 @@ import os
 
 # --- SETTINGS ---
 APP_NAME = "ProjectsDownloader-P3WS"
-APP_VERSION = "0.5"
+APP_VERSION = "0.4.1"
 APP_AUTHOR = "coltonsr77"
 APP_DESCRIPTION = "A desktop tool to download GitHub repositories or individual files easily."
 MAIN_FILE = "app_gui.py"     # GUI entry point
