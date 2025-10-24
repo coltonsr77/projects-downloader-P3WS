@@ -8,8 +8,8 @@ import os
 from packaging import version  # For version comparison
 
 # === APP INFO ===
-APP_NAME = "Projects Downloader"
-APP_VERSION = "0.4"
+APP_NAME = "Projects Downloader-P3WS"
+APP_VERSION = "0.5"
 APP_AUTHOR = "coltonsr77"
 APP_GITHUB = "https://github.com/coltonsr77/projects-downloader-P3WS"
 APP_RELEASES_API = "https://api.github.com/repos/coltonsr77/projects-downloader-P3WS/releases/latest"
@@ -138,7 +138,8 @@ def show_about():
         f"Created by {APP_AUTHOR}\n"
         f"GitHub: {APP_GITHUB}\n\n"
         "A desktop tool for downloading GitHub repositories or single files.\n"
-        "All downloads are saved in the 'downloads' folder."
+        "All downloads are saved in the 'downloads' folder. \n"
+        "This app is not being updated anymore"
     )
     messagebox.showinfo("About", about_text)
 
