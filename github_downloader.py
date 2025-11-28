@@ -61,22 +61,3 @@ def download_file(file_url):
         print(f"\n✅ File saved to: {output_path}")
     else:
         print(f"❌ Failed to download file: {response.status_code} - {response.reason}")
-
-
-# === CLI Mode (optional use) ===
-if __name__ == "__main__":
-    print("=== GitHub Downloader CLI ===")
-    print("1. Download a repository")
-    print("2. Download a single file")
-    choice = input("Choose option (1/2): ")
-
-    if choice == "1":
-        owner = input("Enter repo owner (e.g. torvalds): ")
-        repo = input("Enter repo name (e.g. linux): ")
-        branch = input("Branch (default: main): ") or "main"
-        download_repo(owner, repo, branch)
-    elif choice == "2":
-        file_url = input("Enter GitHub raw file URL: ")
-        download_file(file_url)
-    else:
-        print("Invalid choice.")
